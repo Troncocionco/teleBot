@@ -13,28 +13,16 @@ import logging
 import re
 import json
 
-"""
-- `/roll` - reply with a random integer between 1 and 6, like rolling a dice.
-- `/time` - reply with the current time, like a clock.
-- `/ip` - 
-- `/anteprima` - 
-- `/testUp` - 
-
-"""
 with open('/home/pi/giacominoBot/conf.json') as f:
   conf_File = json.load(f)
 
 path = conf_File['HOME']
 
 
-#my_logger.debug('this is debug')
-#my_logger.critical('this is critical')
-
 def on_chat_message(msg):
 
     logging.basicConfig(filename=conf_File['Log_directory'], filemode='a',format='[%(asctime)s] - %(name)s - %(levelname)s - %(message)s')
 
-    pprint(msg)
     logging.info(msg)
     content_type, chat_type, chat_id = telepot.glance(msg)
     reg_Anteprima = "/anteprima\s([0-9]*)"
@@ -64,7 +52,7 @@ def on_chat_message(msg):
             ip_request = requests.get("http://checkip.amazonaws.com")
             URL = str(ip_request.content)
             URL = URL[:-1]
-            bot.sendMessage(chat_id, "IP_RaspberryPi_Zero: "+URL)
+            bot.sendMessage(chat_id, "IP_RPI: "+URL)
             bot.sendMessage(chat_id, "Server Fumetti: comicsauthority.zapto.org:2202")
             bot.sendMessage(chat_id, "Server Backup Fumetti: comicsauthority2.zapto.org:2202")
     elif command == "/up":
@@ -104,45 +92,7 @@ def channelFiltering(msg, chat_ref):
                 bot.sendMessage(chat_ref, filterMsg)
                 logging.info(filterMsg)
                 bot.forwardMessage(chat_ref, cid, msg_id)
-        
-
-    #print ("CID: "+cid+"\nMSID: "+str(msg_id))
-
-"""     pattern1 = 'XXX\-'
-    pattern2 = 'TV-Episodes.*\n.*\nDexter.S09'
-    pattern3 = '.*?Miami Heat.*\n\nvia.*'
-    pattern4 = 'TV-Episodes.*\n.*\nStar.Wars.The.Bad.Batch.S'
-    pattern5 = 'TV-Ep.*\n.*\nLoki'
-
-    result1 = re.match(pattern1, text_msg)
-    result2 = re. match(pattern2, text_msg)
-    result3 = re.match(pattern3,text_msg)
-    result4 = re.match(pattern4, text_msg)
-    result5 = re.match(pattern5, text_msg)
-
-    if result1:
-        print("Pornazzo! Censura!")
-        logging.info("Pornazzo! Censura!")
-        bot.deleteMessage((cid, msg_id))
-    elif result2:
-        bot.sendMessage(chat_ref, "***Nuova Puntata #Dexter!***")
-        logging.info("***Nuova Puntata #Dexter!***")
-        bot.forwardMessage(chat_ref, cid, msg_id)
-    elif result3:
-        bot.sendMessage(chat_ref, "***Hanno giocato gli #Heat!***")
-        logging.info("***Hanno giocato gli Heat!***")
-        bot.forwardMessage(chat_ref, cid, msg_id)
-    elif result4:
-        bot.sendMessage(chat_ref, "***Nuova Puntata Star Wars #BadBatch!***")
-        logging.info("***Nuova Puntata BadBatch!***")
-        bot.forwardMessage(chat_ref, cid, msg_id)
-    elif result5:
-        bot.sendMessage(chat_ref, "***Nuova Puntata #Loki!***")
-        logging.info("***Nuova Puntata MARVEL Loki!***")
-        bot.forwardMessage(chat_ref, cid, msg_id)        
-    else:
-        print("OK.") """
-    
+            
 
 def on_callback_query(msg):
 
@@ -174,7 +124,6 @@ def previewPolling(t):
     ref_day = datetime.date(2022,2,15)
 
     numbAnteprima = str((today-ref_day).days//30 + ref)
-
 
     url = "https://www.panini.it/media/flowpaper/A"+numbAnteprima+"/docs/A"+numbAnteprima+".pdf"
     
