@@ -75,11 +75,17 @@ def on_chat_message(msg):
         else:
             bot.sendMessage(chat_id, "Server Down or Unreachable!")
     elif "/anteprima" in command:
-        numbAnteprima = re.match(reg_Anteprima, command).group(1)
-        #Va cambiato sendDocument, non e' piu una risorsa locale
-        url = "https://www.panini.it/media/flowpaper/A"+numbAnteprima+"/docs/A"+numbAnteprima+".pdf"
-        bot.sendMessage(chat_id, "Nota: Febbraio 2021 --> #354")
-        bot.sendMessage(chat_id, url, disable_web_page_preview = False)
+        try:
+            numbAnteprima = re.match(reg_Anteprima, command).group(1)
+
+            #Va cambiato sendDocument, non e' piu una risorsa locale
+            url = "https://www.panini.it/media/flowpaper/A"+numbAnteprima+"/docs/A"+numbAnteprima+".pdf"
+            bot.sendMessage(chat_id, url, disable_web_page_preview = False)
+        except:
+            last_prev = os.listdir("/home/pi/giacominoBot/res/")
+            last_prev = sorted(last_prev)
+            bot.sendMessage(chat_id, str(datetime.date.today()) + " - Last downloaded: " + last_prev[-1])
+            #bot.sendMessage(chat_id, "Nota: Febbraio 2021 --> #354")
 
 def channelFiltering(msg, chat_ref):
     #cid = "@rss_torrg" #Channel Torrent Galaxy RSS Feed
@@ -110,43 +116,6 @@ def channelFiltering(msg, chat_ref):
         #print ("CID: "+cid+"\nMSID: "+str(msg_id))        
 
    
-
-"""     pattern1 = 'XXX\-'
-    pattern2 = 'TV-Episodes.*\n.*\nDexter.S09'
-    pattern3 = '.*?Miami Heat.*\n\nvia.*'
-    pattern4 = 'TV-Episodes.*\n.*\nStar.Wars.The.Bad.Batch.S'
-    pattern5 = 'TV-Ep.*\n.*\nLoki'
-
-    result1 = re.match(pattern1, text_msg)
-    result2 = re. match(pattern2, text_msg)
-    result3 = re.match(pattern3,text_msg)
-    result4 = re.match(pattern4, text_msg)
-    result5 = re.match(pattern5, text_msg)
-
-    if result1:
-        print("Pornazzo! Censura!")
-        logging.info("Pornazzo! Censura!")
-        bot.deleteMessage((cid, msg_id))
-    elif result2:
-        bot.sendMessage(chat_ref, "***Nuova Puntata #Dexter!***")
-        logging.info("***Nuova Puntata #Dexter!***")
-        bot.forwardMessage(chat_ref, cid, msg_id)
-    elif result3:
-        bot.sendMessage(chat_ref, "***Hanno giocato gli #Heat!***")
-        logging.info("***Hanno giocato gli Heat!***")
-        bot.forwardMessage(chat_ref, cid, msg_id)
-    elif result4:
-        bot.sendMessage(chat_ref, "***Nuova Puntata Star Wars #BadBatch!***")
-        logging.info("***Nuova Puntata BadBatch!***")
-        bot.forwardMessage(chat_ref, cid, msg_id)
-    elif result5:
-        bot.sendMessage(chat_ref, "***Nuova Puntata #Loki!***")
-        logging.info("***Nuova Puntata MARVEL Loki!***")
-        bot.forwardMessage(chat_ref, cid, msg_id)        
-    else:
-        print("OK.") """
-    
-
 def on_callback_query(msg):
 
     pprint(msg)
@@ -199,3 +168,6 @@ schedule.every().day.at("16:15").do(previewPolling,'Attempting to retrive new An
 while 1:
     schedule.run_pending()
     time.sleep(10)
+
+
+
