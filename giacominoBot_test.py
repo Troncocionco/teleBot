@@ -21,7 +21,7 @@ import json
 - `/testUp` - 
 
 """
-with open('/home/pi/giacominoBot/conf.json') as f:
+with open('conf.json') as f:
   conf_File = json.load(f)
 
 path = conf_File['HOME']
@@ -65,15 +65,9 @@ def on_chat_message(msg):
             URL = str(ip_request.content)
             URL = URL[:-1]
             bot.sendMessage(chat_id, "IP_RaspberryPi_Zero: "+URL)
-            bot.sendMessage(chat_id, "Server Fumetti: comicsauthority.zapto.org:2202")
-            bot.sendMessage(chat_id, "Server Backup Fumetti: comicsauthority2.zapto.org:2202")
-    elif command == "/up":
-        bashCommand = "ping -c 3 192.168.1.38"
-        resp = os.system(bashCommand)
-        if resp == 0:
-            bot.sendMessage(chat_id, "Server Up!")
-        else:
-            bot.sendMessage(chat_id, "Server Down or Unreachable!")
+            bot.sendMessage(chat_id, "Server Fumetti: "+ conf_File['Domain']['domain1']['domain-1-name'] + ":" + conf_File['Domain']['domain1']['domain-1-port'] )
+            bot.sendMessage(chat_id, "Server Backup Fumetti: "+ conf_File['Domain']['domain2']['domain-2-name'] + ":" + conf_File['Domain']['domain2']['domain-2-port'] )
+
     elif "/anteprima" in command:
         try:
             numbAnteprima = re.match(reg_Anteprima, command).group(1)
@@ -82,7 +76,7 @@ def on_chat_message(msg):
             url = "https://www.panini.it/media/flowpaper/A"+numbAnteprima+"/docs/A"+numbAnteprima+".pdf"
             bot.sendMessage(chat_id, url, disable_web_page_preview = False)
         except:
-            last_prev = os.listdir("/home/pi/giacominoBot/res/")
+            last_prev = os.listdir(conf_File['HOME'] + "res/")
             last_prev = sorted(last_prev)
             bot.sendMessage(chat_id, str(datetime.date.today()) + " - Last downloaded: " + last_prev[-1])
             #bot.sendMessage(chat_id, "Nota: Febbraio 2021 --> #354")
@@ -111,11 +105,8 @@ def channelFiltering(msg, chat_ref):
                 pprint("Questo dovrei lasciarlo passare")
                 bot.sendMessage(chat_ref, filterMsg)
                 logging.info(filterMsg)
-                bot.forwardMessage(chat_ref, cid, msg_id)
-        
-        #print ("CID: "+cid+"\nMSID: "+str(msg_id))        
+                bot.forwardMessage(chat_ref, cid, msg_id)   
 
-   
 def on_callback_query(msg):
 
     pprint(msg)
@@ -168,6 +159,3 @@ schedule.every().day.at("16:15").do(previewPolling,'Attempting to retrive new An
 while 1:
     schedule.run_pending()
     time.sleep(10)
-
-
-
