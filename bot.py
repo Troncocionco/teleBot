@@ -16,7 +16,7 @@ import subprocess
 from bs4 import BeautifulSoup
 from pprint import pprint
 
-with open('/opt/bot/conf.json') as f:
+with open('conf.json') as f:
   conFile = json.load(f)
 
 updater = Updater(conFile['TOKEN'], use_context=True) #use_Context: al bot vengono passati anche i CallBackContext
