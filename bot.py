@@ -88,8 +88,9 @@ def cbQuery(update, context) -> None:
 
         id = i[0]
         link = i[1].find("a")['href']
-        thumb = "https://comicsbox.it/" + link.replace("serie","cover") + "_001.jpg"
         link = "https://comicsbox.it/"+ link
+        thumb = link.replace("serie","cover") + "_001.jpg"
+
         value = i[1].text
 
         item = InlineQueryResultArticle(
