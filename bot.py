@@ -1,126 +1,146 @@
-# coding=utf-8
-from ast import get_docstring
-import atexit
+#!/usr/bin/python3
+
+from cmath import log
+import time
+import schedule
+import random
+import datetime
+import telepot
+import requests
 import os
-from uuid import uuid4
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, Update
-from telegram.error import Unauthorized, BadRequest, TimedOut, NetworkError, ChatMigrated, TelegramError
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters, InlineQueryHandler
-from telegram.utils.helpers import escape_markdown
+from telepot.loop import MessageLoop
+from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from pprint import pprint
 import logging
-import requests
+import re
 import json
-import subprocess
-from bs4 import BeautifulSoup
-from pprint import pprint
+
+"""
+- `/ip` - 
+- `/anteprima` - 
+- `/testUp` - 
+"""
 
 with open('conf.json') as f:
-  conFile = json.load(f)
+  conf_File = json.load(f)
 
-updater = Updater(conFile['TOKEN'], use_context=True) #use_Context: al bot vengono passati anche i CallBackContext
-dispatcher = updater.dispatcher
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+path = conf_File['HOME']
 
 
+#my_logger.debug('this is debug')
+#my_logger.critical('this is critical')
 
-def start(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
+def on_chat_message(msg):
 
-def send_message(update, context, message):
-    pprint(update)
-    context.bot.send_message(chat_id=update.effective_chat.id, text=message)
+    logging.basicConfig(filename=conf_File['Log_directory'], filemode='a',format='[%(asctime)s] - %(name)s - %(levelname)s - %(message)s')
 
-def ip(update, context):
-    chat_id=update.effective_chat.id
+    pprint(msg)
+    logging.info(msg)
+    content_type, chat_type, chat_id = telepot.glance(msg)
+    reg_Anteprima = "/anteprima\s([0-9]*)"
+    command = msg['text']
 
-    if str(chat_id) in conFile['AllowedUser']:
-        ip_request = requests.get("http://checkip.amazonaws.com")
-        URL = ip_request.content.decode('utf-8')[:-1]
-        context.bot.send_message(chat_id=update.effective_chat.id, text="IP_Pubblico: "+URL)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Server Fumetti: "+URL+":2202")
-
-def ubooquity(update, context):
-
-    chat_id=update.effective_chat.id
-
-    if str(chat_id) in conFile['AllowedUser']:
-        if not context.args:
-            output = subprocess.check_output(['bash','/home/pi/Ubooquity/run-ubooquity.sh', 'status'])
-            context.bot.send_message(chat_id=update.effective_chat.id, text=output.decode('utf-8'))
-        else:
-            output = subprocess.check_output(['bash','/home/pi/Ubooquity/run-ubooquity.sh', context.args[0]])
-            context.bot.send_message(chat_id=update.effective_chat.id, text=output.decode('utf-8'))
-
-def download(update, context):
-    #pprint(type(context.args[0]))
-    #pprint(context.args[0]) 
-    chat_id=update.effective_chat.id
-
-    if str(chat_id) in conFile['AllowedUser']:
-        subprocess.run(["bash", "download.sh", context.args[0]])
-        output = subprocess.check_output(["ls","-t","/data_500GB/Fumetti/USA"])
-        output = str(output).replace("\\n",' #')
-        pprint(output)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=output)
-
-
-def cbQuery(update, context) -> None:
-    """Handle the inline query."""
-  
-    query = update.inline_query.query
-
-    if query == "":
-        return
-    pprint(str(query))
-    url='https://www.comicsbox.it/search.php'
-    params ={'stringa': str(query),'criterio': 'ita', 'submit':''}
-
-    response=requests.post(url, data=params)
-    soup = BeautifulSoup(response.text, 'html5lib')
+    chat_ref = conf_File['Users']['Admin']['Chat_ID_Reference']
     
-    table = soup.find_all("span", class_="title")
+    try:
+        user = msg['from']['username']
+        bot.sendMessage(chat_id, 'Ciaone ' + str(user))
+    except:
+        print("Non e' una chat privata!")
+        #channelFiltering(msg, chat_ref)
+        
+    option = {
+        "channel"
+    }
 
-    results = []
+    if chat_type == "channel":
+        channelFiltering(msg, chat_ref)
+    elif command == '/roll':
+        bot.sendMessage(chat_id, random.randint(1,6))
+    elif command == '/time':
+        bot.sendMessage(chat_id, str(datetime.datetime.now()))
+    elif command == '/ip':
+        if str(chat_id) in conf_File['AllowedUser']:
+            ip_request = requests.get("http://checkip.amazonaws.com")
+            URL = str(ip_request.content)
+            URL = URL[:-1]
+            bot.sendMessage(chat_id, "IP_telebot: "+URL)
+            bot.sendMessage(chat_id, "Server Fumetti: "+ conf_File['Domain']['domain1']['domain-1-name'] + ":" + conf_File['Domain']['domain1']['domain-1-port'] )
+            bot.sendMessage(chat_id, "Server Backup Fumetti: "+ conf_File['Domain']['domain2']['domain-2-name'] + ":" + conf_File['Domain']['domain2']['domain-2-port'] )
 
-    for i in enumerate(table[:30]):
+    elif "/anteprima" in command:
+        try:
+            numbAnteprima = re.match(reg_Anteprima, command).group(1)
 
-        id = i[0]
-        link = i[1].find("a")['href']
-        link = "https://comicsbox.it/"+ link
-        thumb = link.replace("serie","cover") + "_001.jpg"
+            #Va cambiato sendDocument, non e' piu una risorsa locale
+            url = "https://www.panini.it/media/flowpaper/A"+numbAnteprima+"/docs/A"+numbAnteprima+".pdf"
+            bot.sendMessage(chat_id, url, disable_web_page_preview = False)
+        except:
+            last_prev = os.listdir(conf_File['HOME'] + "res/")
+            last_prev = sorted(last_prev)
+            bot.sendMessage(chat_id, str(datetime.date.today()) + " - Last downloaded: " + last_prev[-1])
+            #bot.sendMessage(chat_id, "Nota: Febbraio 2021 --> #354")
 
-        value = i[1].text
+def channelFiltering(msg, chat_ref):
+    #cid = "@rss_torrg" #Channel Torrent Galaxy RSS Feed
+    cid = "-1001159149797L" #Channel Torrent Galaxy RSS Feed
+    msg_id = msg['message_id']
 
-        item = InlineQueryResultArticle(
-            id=str(i[0]),
-            title= str(value),
-            input_message_content= InputTextMessageContent(link),
-            description=str(value))
+    countFiltri = len(conf_File['Users']['Admin']['Filters'])
+    #print(countFiltri)
 
-        results.append(item)
+    text_msg = msg['text']
+    
+    for i in conf_File['Users']['Admin']['Filters']:
+        #print(conf_File['Users']['Admin']['Filters'][i])
+        pattern = str(conf_File['Users']['Admin']['Filters'][i]['pattern'])
+        filterMsg = str(conf_File['Users']['Admin']['Filters'][i]['messaggio'])
+        result = re.search(pattern, text_msg)
 
-    update.inline_query.answer(results)
+        if result:
+            if (pattern == 'XXX -' or pattern == 'XXX-'):
+                pprint("Questo dovrei cancellarlo")
+                bot.deleteMessage((cid, msg_id))
+            else:
+                pprint("Questo dovrei lasciarlo passare")
+                bot.sendMessage(chat_ref, filterMsg)
+                logging.info(filterMsg)
+                bot.forwardMessage(chat_ref, cid, msg_id)   
 
-dispatcher.add_handler(InlineQueryHandler(cbQuery))
+    
+bot = telepot.Bot(conf_File['TOKEN'])
 
-#Handler per download remotizzato
-download_handler = CommandHandler('down',download)
-dispatcher.add_handler(download_handler)
+#MessageLoop(bot, on_chat_message).run_as_thread()
+bot.message_loop({'chat': on_chat_message})
 
-#Handler per messaggi_comando
-start_handler = CommandHandler('start', start)
-dispatcher.add_handler(start_handler)
+print('I am listening ...')
 
-#Handler per Serverino Ubooquity
-ubooquity_handler = CommandHandler('ubo', ubooquity)
-dispatcher.add_handler(ubooquity_handler)
+def previewPolling(t):
+    
+    ref = 366
+    today = datetime.date.today()
+    ref_day = datetime.date(2022,2,15)
 
-#Handler per messaggi_comando con argomenti
-ip_handler = CommandHandler('ip', ip)
-dispatcher.add_handler(ip_handler)
+    numbAnteprima = str((today-ref_day).days//30 + ref)
 
 
+    url = "https://www.panini.it/media/flowpaper/A"+numbAnteprima+"/docs/A"+numbAnteprima+".pdf"
+    
+    print("Attempting to retrive Antemprima #"+numbAnteprima+"...")
+    r = requests.get(url, allow_redirects=True)
+    fileExist = not os.path.exists(path +'/res/'+ numbAnteprima +".pdf")
+    print(fileExist)
 
-updater.start_polling()
+    if((r.headers["Content-Type"] == "application/pdf") & fileExist):
+        open(path+'/res/A' + numbAnteprima+'.pdf', 'wb').write(r.content)
+        print("Done!")
+    else:
+        print("Failed!")
+        logging.info("File Anteprima #" + numbAnteprima + " still not available!")
+    return
+
+schedule.every().day.at("16:15").do(previewPolling,'Attempting to retrive new Anteprima...')
+
+while 1:
+    schedule.run_pending()
+    time.sleep(10)

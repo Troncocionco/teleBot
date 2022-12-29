@@ -1,0 +1,16 @@
+# Add x permission on script
+# Place this file in /etc/systemd/system/bot.service
+# Restart deamon 'sudo systemctl daemon-reload'
+# Enable/Start service 'sudo systemctl enable/start bot.service'
+
+[Unit]
+Description=teleBot service
+
+[Service]
+User=root
+WorkingDirectory=/home/teleBot
+ExecStart=/home/teleBot/bot.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
