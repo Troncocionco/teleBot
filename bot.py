@@ -62,8 +62,7 @@ def on_chat_message(msg):
     elif command == '/ip':
         if str(chat_id) in conf_File['AllowedUser']:
             ip_request = requests.get("http://checkip.amazonaws.com")
-            URL = str(ip_request.content)
-            URL = URL[:-1]
+            URL = ip_request.content.decode("UTF-8")[:-1]
             bot.sendMessage(chat_id, "IP_telebot: "+URL)
             bot.sendMessage(chat_id, "Server Fumetti: "+ conf_File['Domain']['domain1']['domain-1-name'] + ":" + conf_File['Domain']['domain1']['domain-1-port'] )
             bot.sendMessage(chat_id, "Server Backup Fumetti: "+ conf_File['Domain']['domain2']['domain-2-name'] + ":" + conf_File['Domain']['domain2']['domain-2-port'] )
