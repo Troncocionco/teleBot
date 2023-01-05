@@ -3,7 +3,9 @@ Just playing around with Telegram's Bot APi
 
 Need to install this python module first
 
-    pip3 install python-telegram-bot
+```bash
+    pip install schedule telepot requests
+```
 
 - Get new 'Anteprima' from Panini.it based on the issue requested
 - Filtering msg from a specific Telegram Channel

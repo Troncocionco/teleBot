@@ -34,7 +34,7 @@ def on_chat_message(msg):
 
     logging.basicConfig(filename=conf_File['Log_directory'], filemode='a',format='[%(asctime)s] - %(name)s - %(levelname)s - %(message)s')
 
-    pprint(msg)
+    #pprint(msg)
     logging.info(msg)
     content_type, chat_type, chat_id = telepot.glance(msg)
     reg_Anteprima = "/anteprima\s([0-9]*)"
@@ -46,7 +46,7 @@ def on_chat_message(msg):
         user = msg['from']['username']
         bot.sendMessage(chat_id, 'Ciaone ' + str(user))
     except:
-        print("Non e' una chat privata!")
+        logging.info("Non e' una chat privata!")
         #channelFiltering(msg, chat_ref)
         
     option = {
@@ -64,13 +64,13 @@ def on_chat_message(msg):
             ip_request = requests.get("http://checkip.amazonaws.com")
             URL = ip_request.content.decode("UTF-8")[:-1]
             bot.sendMessage(chat_id, "IP_telebot: "+URL)
-            bot.sendMessage(chat_id, "Server Fumetti: "+ conf_File['Domain']['domain1']['domain-1-name'] + ":" + conf_File['Domain']['domain1']['domain-1-port'] )
+            bot.sendMessage(chat_id, "Server Fumetti: "+ conf_File['Domain']['domain1']['domain-1-name'] )
             bot.sendMessage(chat_id, "Server Backup Fumetti: "+ conf_File['Domain']['domain2']['domain-2-name'] + ":" + conf_File['Domain']['domain2']['domain-2-port'] )
 
     elif "/anteprima" in command:
         try:
             numbAnteprima = re.match(reg_Anteprima, command).group(1)
-
+	    
             #Va cambiato sendDocument, non e' piu una risorsa locale
             url = "https://www.panini.it/media/flowpaper/A"+numbAnteprima+"/docs/A"+numbAnteprima+".pdf"
             bot.sendMessage(chat_id, url, disable_web_page_preview = False)
