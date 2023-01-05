@@ -21,7 +21,8 @@ import json
 - `/testUp` - 
 """
 
-with open('conf.json') as f:
+#Need an environment variable
+with open(os.getenv('BOT_CONF_FILE')) as f:
   conf_File = json.load(f)
 
 path = conf_File['HOME']
