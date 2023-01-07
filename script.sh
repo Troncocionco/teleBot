@@ -35,4 +35,4 @@ fi
 chmod +x $working_dir/bot.py
 
 #Install dependencies
-pip install -r requirements
+pip install -r requirements.txt
