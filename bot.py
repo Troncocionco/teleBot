@@ -35,7 +35,6 @@ def on_chat_message(msg):
 
     logging.basicConfig(filename=conf_File['Log_directory'], filemode='a',format='[%(asctime)s] - %(name)s - %(levelname)s - %(message)s')
 
-    #pprint(msg)
     logging.info(msg)
     content_type, chat_type, chat_id = telepot.glance(msg)
     reg_Anteprima = "/anteprima\s([0-9]*)"
