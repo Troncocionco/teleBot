@@ -122,7 +122,6 @@ def previewPolling(t):
 
     numbAnteprima = str((today-ref_day).days//30 + ref)
 
-
     url = "https://www.panini.it/media/flowpaper/A"+numbAnteprima+"/docs/A"+numbAnteprima+".pdf"
     
     print("Attempting to retrive Antemprima #"+numbAnteprima+"...")
@@ -138,7 +137,30 @@ def previewPolling(t):
         logging.info("File Anteprima #" + numbAnteprima + " still not available!")
     return
 
+
+def reminderSpotify():
+    cid = "-1001159149797L"
+    
+    people = [
+        {"name": "Virgilio", "tag": "alice@example.com"},
+        {"name": "Tom", "tag": "bob@example.com"},
+        {"name": "Luca", "tag": "charlie@example.com"},
+        {"name": "Valerio", "tag": "charlie@example.com"},
+        {"name": "Gianluca", "tag": "charlie@example.com"},
+        {"name": "Giacomo", "tag": "charlie@example.com"}
+    ]
+
+    current_month = datetime.datetime.now().month
+    
+    person_to_pay = people[(current_month % len(people))-1 ]
+
+    bot.sendMessage(cid, f"Tocca a {person_to_pay}")
+
+
+reminderSpotify()
+
 schedule.every().day.at("16:15").do(previewPolling,'Attempting to retrive new Anteprima...')
+#schedule.every().month.at("10:00").do(reminderSpotify)
 
 while 1:
     schedule.run_pending()
