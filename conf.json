@@ -1,0 +1,45 @@
+{
+    "TOKEN": "YOUR_CHATBOT_TOKEN",
+    "Log_directory": "/workspace/test-python/log/bot.log",
+    "HOME": "/workspace/test-python/",
+    "AllowedUser": "user1_ID user2_ID user3_ID",
+     "Users": {
+        "user1": {
+            "tag": "user1_tag",
+            "Pers_ChatID": "user1_chatID",
+            "SpotifyGroupID": "group_chat_ID",
+            "ChannelID": "channel_ID",
+            "Filters": {
+                "filtro1": {
+                    "pattern": "regex_example_1",
+                    "messaggio": "Message"
+                }
+            }
+        },
+        "user2": {
+            "tag": "user2_tag"
+        },
+        "user3": {
+            "tag": "user3_tag"
+        },
+        "user4": {
+            "tag": "user4_tag"
+        },
+        "user5": {
+            "tag": "user5_tag"
+        },
+        "user6": {
+            "tag": "user6_tag"
+        }
+    },
+    "Domain": {
+        "domain1": {
+            "domain-1-name": "IP_ADDRESS//DOMAIN",
+            "domain-1-port": "PORT_NUMBER"
+        },
+        "domain2": {
+            "domain-2-name": "IP_ADDRESS//DOMAIN",
+            "domain-2-port": "PORT_NUMBER"
+        }
+    }
+}
