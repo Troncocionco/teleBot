@@ -16,6 +16,21 @@ then
 	touch $working_dir/log/bot.log
 fi
 
+if [ -f $( pwd )/conf.json ]
+then
+    export BOT_CONFIG_FILE="$( pwd )/conf.json"
+
+    # Read the JSON file
+    json_data=$(cat $BOT_CONFIG_FILE)
+
+    # Parse the JSON data and update the field "HOME" with the value of the current directory
+    json_data=$(echo $json_data | jq --arg dir "$working_dir/" '.HOME = $dir')
+    json_data=$(echo $json_data | jq --arg dir "$working_dir/log/bot.log" '.Log_directory = $dir')
+
+    # Write the updated JSON data back to the file
+    echo $json_data > $BOT_CONFIG_FILE
+fi
+
 #Check other dependencies
 if ! command -v python3 &> /dev/null
 then
@@ -35,4 +50,4 @@ fi
 chmod +x $working_dir/bot.py
 
 #Install dependencies
-pip install -r requirements.txt
+pip3 install -r requirements.txt
