@@ -1,25 +1,16 @@
 #!/usr/bin/python3
-
-from cmath import log
-import time
-import schedule
-import random
-import datetime
-import telepot
-import requests
 import os
-from telepot.loop import MessageLoop
-from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
-from pprint import pprint
-import logging
-import re
 import json
+import schedule
+from pprint import pprint
+import re
+import time
+import telegram
+import datetime
+import requests
+from telegram.ext import Updater, CommandHandler, InlineQueryHandler, MessageHandler, Filters
 
-"""
-- `/ip` - 
-- `/anteprima` - 
-- `/testUp` - 
-"""
+
 
 #Need an environment variable
 with open(os.getenv('BOT_CONF_FILE')) as f:
@@ -27,141 +18,116 @@ with open(os.getenv('BOT_CONF_FILE')) as f:
 
 path = conf_File['HOME']
 
+updater = Updater(token=conf_File['TOKEN'], use_context=True)
+dispatcher = updater.dispatcher
 
-#my_logger.debug('this is debug')
-#my_logger.critical('this is critical')
+############
+# Handlers #
+############
 
-def on_chat_message(msg):
+def start(update, context):
+    """Send a message when the command /start is issued."""
+    name = update.message.from_user.first_name
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {name}! How can I help you today?")
 
-    logging.basicConfig(filename=conf_File['Log_directory'], filemode='a',format='[%(asctime)s] - %(name)s - %(levelname)s - %(message)s')
 
-    logging.info(msg)
-    content_type, chat_type, chat_id = telepot.glance(msg)
-    reg_Anteprima = "/anteprima\s([0-9]*)"
-    command = msg['text']
+def myip(update, context):
+    """ Replace with addresses of few services when the command /ip is issued"""
+    message = update.message
+    chat_id = message.chat_id
 
-    chat_ref = conf_File['Users']['Admin']['Chat_ID_Reference']
+    if str(chat_id) in conf_File['AllowedUser']:
+        ip_request = requests.get("http://checkip.amazonaws.com")
+        URL = ip_request.content.decode("UTF-8")[:-1]
+        context.bot.sendMessage(chat_id, "IP_telebot: "+URL)
+        context.bot.sendMessage(chat_id, "Server Fumetti: "+ conf_File['Domain']['domain1']['domain-1-name'] )
+        context.bot.sendMessage(chat_id, "Server Backup Fumetti: "+ conf_File['Domain']['domain2']['domain-2-name'] + ":" + conf_File['Domain']['domain2']['domain-2-port'] )
+
+# def inline_query(update, context):
+#     """Handle the inline query."""
+#     query = update.inline_query.query
+#     # handle the inline query here
+#     pass
+
+def channel_message(update, context):
+    """Handle messages from a channel."""
+    pprint(type(update.channel_post.text))
+    text_msg = update.channel_post.text
     
-    try:
-        user = msg['from']['username']
-        bot.sendMessage(chat_id, 'Ciaone ' + str(user))
-    except:
-        logging.info("Non e' una chat privata!")
-        #channelFiltering(msg, chat_ref)
-        
-    option = {
-        "channel"
-    }
 
-    if chat_type == "channel":
-        channelFiltering(msg, chat_ref)
-    elif command == '/roll':
-        bot.sendMessage(chat_id, random.randint(1,6))
-    elif command == '/time':
-        bot.sendMessage(chat_id, str(datetime.datetime.now()))
-    elif command == '/ip':
-        if str(chat_id) in conf_File['AllowedUser']:
-            ip_request = requests.get("http://checkip.amazonaws.com")
-            URL = ip_request.content.decode("UTF-8")[:-1]
-            bot.sendMessage(chat_id, "IP_telebot: "+URL)
-            bot.sendMessage(chat_id, "Server Fumetti: "+ conf_File['Domain']['domain1']['domain-1-name'] )
-            bot.sendMessage(chat_id, "Server Backup Fumetti: "+ conf_File['Domain']['domain2']['domain-2-name'] + ":" + conf_File['Domain']['domain2']['domain-2-port'] )
-
-    elif "/anteprima" in command:
-        try:
-            numbAnteprima = re.match(reg_Anteprima, command).group(1)
-	    
-            #Va cambiato sendDocument, non e' piu una risorsa locale
-            url = "https://www.panini.it/media/flowpaper/A"+numbAnteprima+"/docs/A"+numbAnteprima+".pdf"
-            bot.sendMessage(chat_id, url, disable_web_page_preview = False)
-        except:
-            last_prev = os.listdir(conf_File['HOME'] + "res/")
-            last_prev = sorted(last_prev)
-            bot.sendMessage(chat_id, str(datetime.date.today()) + " - Last downloaded: " + last_prev[-1])
-            #bot.sendMessage(chat_id, "Nota: Febbraio 2021 --> #354")
-
-def channelFiltering(msg, chat_ref):
     #cid = "@rss_torrg" #Channel Torrent Galaxy RSS Feed
-    cid = "-1001159149797L" #Channel Torrent Galaxy RSS Feed
-    msg_id = msg['message_id']
+    cid = conf_File['Users']['Giacomo']['ChannelID'] #Channel Torrent Galaxy RSS Feed
 
-    countFiltri = len(conf_File['Users']['Admin']['Filters'])
-    #print(countFiltri)
+    countFiltri = len(conf_File['Users']['Giacomo']['Filters'])
 
-    text_msg = msg['text']
-    
-    for i in conf_File['Users']['Admin']['Filters']:
-        #print(conf_File['Users']['Admin']['Filters'][i])
-        pattern = str(conf_File['Users']['Admin']['Filters'][i]['pattern'])
-        filterMsg = str(conf_File['Users']['Admin']['Filters'][i]['messaggio'])
+    for i in conf_File['Users']['Giacomo']['Filters']:
+
+        pattern = str(conf_File['Users']['Giacomo']['Filters'][i]['pattern'])
+        filterMsg = str(conf_File['Users']['Giacomo']['Filters'][i]['messaggio'])
         result = re.search(pattern, text_msg)
 
         if result:
             if (pattern == 'XXX -' or pattern == 'XXX-'):
-                pprint("Questo dovrei cancellarlo")
-                bot.deleteMessage((cid, msg_id))
+                print("Match del-regex! Deleting message... ")
+                context.bot.delete_message(chat_id=update.channel_post.chat_id, message_id=update.channel_post.message_id)
             else:
-                pprint("Questo dovrei lasciarlo passare")
-                bot.sendMessage(chat_ref, filterMsg)
-                logging.info(filterMsg)
-                bot.forwardMessage(chat_ref, cid, msg_id)   
+                print("Match regex! Forwarding message... ")
+                #bot.sendMessage(chat_ref, filterMsg)
+                context.bot.forward_message(chat_id=conf_File['Users']['Giacomo']['Pers_ChatID'], from_chat_id=update.channel_post.chat_id, message_id=update.channel_post.message_id)
 
-    
-bot = telepot.Bot(conf_File['TOKEN'])
 
-#MessageLoop(bot, on_chat_message).run_as_thread()
-bot.message_loop({'chat': on_chat_message})
+def error_callback(bot, update, error):
+    try:
+        raise error
+    except TelegramError as te:
+        print(f'TelegramError: {te}')
+    except Exception as e:
+        print(f'Error: {e}')
 
-print('I am listening ...')
 
-def previewPolling(t):
-    
-    ref = 366
-    today = datetime.date.today()
-    ref_day = datetime.date(2022,2,15)
-
-    numbAnteprima = str((today-ref_day).days//30 + ref)
-
-    url = "https://www.panini.it/media/flowpaper/A"+numbAnteprima+"/docs/A"+numbAnteprima+".pdf"
-    
-    print("Attempting to retrive Antemprima #"+numbAnteprima+"...")
-    r = requests.get(url, allow_redirects=True)
-    fileExist = not os.path.exists(path +'/res/'+ numbAnteprima +".pdf")
-    print(fileExist)
-
-    if((r.headers["Content-Type"] == "application/pdf") & fileExist):
-        open(path+'/res/A' + numbAnteprima+'.pdf', 'wb').write(r.content)
-        print("Done!")
-    else:
-        print("Failed!")
-        logging.info("File Anteprima #" + numbAnteprima + " still not available!")
-    return
+############
 
 
 def reminderSpotify():
-    cid = "-1001159149797L"
-    
-    people = [
-        {"name": "Virgilio", "tag": "alice@example.com"},
-        {"name": "Tom", "tag": "bob@example.com"},
-        {"name": "Luca", "tag": "charlie@example.com"},
-        {"name": "Valerio", "tag": "charlie@example.com"},
-        {"name": "Gianluca", "tag": "charlie@example.com"},
-        {"name": "Giacomo", "tag": "charlie@example.com"}
-    ]
+    pprint("Current jobs schedule ", schedule.get_jobs())
+    chat_ref = conf_File['Users']['Giacomo']['ChannelID']
+
+    people = ["Virgilio", "Tom", "Luca", "Valerio", "Gianluca", "Giacomo"]
+
 
     current_month = datetime.datetime.now().month
-    
-    person_to_pay = people[(current_month % len(people))-1 ]
+    if datetime.datetime.now().day == 15:
 
-    bot.sendMessage(cid, f"Tocca a {person_to_pay}")
+        person_to_pay = people[(current_month % len(people))-1 ]
+        tag = conf_File['Users'][person_to_pay]["tag"]
+
+        updater.bot.sendMessage(chat_ref, "📌Questo mese tocca pagare a @" + person_to_pay)
 
 
-reminderSpotify()
+############
 
-schedule.every().day.at("16:15").do(previewPolling,'Attempting to retrive new Anteprima...')
-#schedule.every().month.at("10:00").do(reminderSpotify)
+start_handler = CommandHandler('start', start)
+dispatcher.add_handler(start_handler)
+
+myip_handler = CommandHandler('ip', myip)
+dispatcher.add_handler(myip_handler)
+
+# inline_query_handler = InlineQueryHandler(inline_query)
+# dispatcher.add_handler(inline_query_handler)
+
+#cid = "@rss_torrg" #Channel Torrent Galaxy RSS Feed
+cid = conf_File['Users']['Giacomo']['ChannelID'] #Channel Torrent Galaxy RSS Feed
+
+channel_message_handler = MessageHandler(Filters.chat(int(cid)), channel_message)
+dispatcher.add_handler(channel_message_handler)
+
+updater.dispatcher.add_error_handler(error_callback)
+
+updater.start_polling()
+
+schedule.every(1).day.at("10:00").do(reminderSpotify)
 
 while 1:
     schedule.run_pending()
-    time.sleep(10)
+    time.sleep(5)
+    
