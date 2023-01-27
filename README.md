@@ -15,6 +15,7 @@ Need to install this python module first
 TO-do:
 - Implement older feature with new library version
 - Double-check presence of 'jq' utility on the system
+- Fix service configuration file
 
 
 Credit: https://gist.github.com/ahmedsadman/2c1f118a02190c868b33c9c71835d706
