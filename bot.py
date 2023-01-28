@@ -75,7 +75,84 @@ def channel_message(update, context):
                 #bot.sendMessage(chat_ref, filterMsg)
                 context.bot.forward_message(chat_id=conf_File['Users']['Giacomo']['Pers_ChatID'], from_chat_id=update.channel_post.chat_id, message_id=update.channel_post.message_id)
 
+#########################################################
+#                Features                               #
+#########################################################
+"""
+def ubooquity(update, context):
 
+    chat_id=update.effective_chat.id
+
+    if str(chat_id) in conFile['AllowedUser']:
+        if not context.args:
+            output = subprocess.check_output(['bash','/home/pi/Ubooquity/run-ubooquity.sh', 'status'])
+            context.bot.send_message(chat_id=update.effective_chat.id, text=output.decode('utf-8'))
+        else:
+            output = subprocess.check_output(['bash','/home/pi/Ubooquity/run-ubooquity.sh', context.args[0]])
+            context.bot.send_message(chat_id=update.effective_chat.id, text=output.decode('utf-8'))
+
+def download(update, context):
+    pprint(type(context.args[0]))
+    pprint(context.args[0])
+    chat_id=update.effective_chat.id
+
+    if str(chat_id) in conFile['AllowedUser']:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Attenzione non scaricare file superiore a 200Mb!")
+        fileName = str(context.args[0]).split("/")[-1]
+        fileName = "/data_500GB/Fumetti/USA/"+ fileName + ".cbr"
+        r = requests.get(str(context.args[0]), allow_redirects=True)
+
+        open(fileName, 'wb').write(r.content)
+
+
+
+        subprocess.run(["bash", "download.sh", context.args[0]])
+        output = subprocess.check_output(["ls","-t","/data_500GB/Fumetti/USA"])
+        output = str(output).replace("\\n",' #')
+        pprint(output)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=output) 
+        
+
+
+def cbQuery(update, context) -> None:
+    #Handle the inline query.
+
+    query = update.inline_query.query
+
+    if query == "":
+        return
+    pprint(str(query))
+    url='https://www.comicsbox.it/search.php'
+    params ={'stringa': str(query),'criterio': 'ita', 'submit':''}
+
+    response=requests.post(url, data=params)
+    soup = BeautifulSoup(response.text, 'html5lib')
+
+    table = soup.find_all("span", class_="title")
+
+    results = []
+
+    for i in enumerate(table[:30]):
+
+        id = i[0]
+        link = i[1].find("a")['href']
+        link = "https://comicsbox.it/"+ link
+        thumb = "https://comicsbox.it/" + link.replace("serie","cover") + "_001.jpg"
+        value = i[1].text
+
+        item = InlineQueryResultArticle(
+            id=str(i[0]),
+            title= str(value),
+            input_message_content= InputTextMessageContent(link),
+            description=str(value))
+
+        results.append(item)
+
+    update.inline_query.answer(results)
+"""
+##############################################################################    
+                
+                
 def error_callback(bot, update, error):
     try:
         raise error
