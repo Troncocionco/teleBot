@@ -18,19 +18,22 @@ fi
 
 if [ -f $( pwd )/conf.json ]
 then
-    export BOT_CONFIG_FILE="$( pwd )/conf.json"
+    echo "export BOT_CONF_FILE=$(pwd)/conf.json" >> ~/.bashrc
+    echo "export BOT_CONF_FILE=$(pwd)/conf.json" >> ~/.bash_profile
+    source ~/.bashrc
+    source ~/.bash_profile
 
     git update-index --skip-worktree conf.json
 
     # Read the JSON file
-    json_data=$(cat $BOT_CONFIG_FILE)
+    json_data=$(cat $BOT_CONF_FILE)
 
     # Parse the JSON data and update the field "HOME" with the value of the current directory
     json_data=$(echo $json_data | jq --arg dir "$working_dir/" '.HOME = $dir')
     json_data=$(echo $json_data | jq --arg dir "$working_dir/log/bot.log" '.Log_directory = $dir')
 
     # Write the updated JSON data back to the file
-    echo $json_data > $BOT_CONFIG_FILE
+    echo $json_data > $BOT_CONF_FILE
 fi
 
 #Check other dependencies

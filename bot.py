@@ -15,8 +15,7 @@ from pymongo import MongoClient
 
 
 #Need an environment variable
-#with open(os.getenv('BOT_CONF_FILE')) as f:
-with open('conf.json') as f:
+with open(os.getenv('BOT_CONF_FILE')) as f:
   conf_File = json.load(f)
 
 path = conf_File['HOME']
@@ -24,8 +23,8 @@ path = conf_File['HOME']
 updater = Updater(token=conf_File['TOKEN'], use_context=True)
 dispatcher = updater.dispatcher
 
-#mongo_user = conf_File['Users']['Giacomo']['Mongo']['user']
-#mongo_password = conf_File['Users']['Giacomo']['Mongo']['password']
+mongo_user = conf_File['Users']['Giacomo']['Mongo']['user']
+mongo_password = conf_File['Users']['Giacomo']['Mongo']['password']
 
 ############
 # Handlers #
@@ -67,13 +66,19 @@ def uscite(update, context):
     collection = db["ita_releases"]
 
     # Get today's date
-    today = datetime.datetime.now().date()
+    today = str(datetime.datetime.now().date())
 
     # Query for documents with a "date" field equal to today's date
     query = {"date": today}
-    documents = collection.find(query)
+    documents = list(collection.find(query))
 
-    pprint(documents)
+    for i in range(10):
+        photo = documents[i]['data_src']
+        caption = documents[i]['title'] + '\n' + documents[i]['href']
+        print(photo, caption)
+        context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo, caption=caption)
+    
+    #pprint(documents) 
 
 
 def channel_message(update, context):
