@@ -3,23 +3,29 @@ import os
 import json
 import schedule
 from pprint import pprint
+from bs4 import BeautifulSoup
 import re
 import time
 import telegram
 import datetime
 import requests
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler, MessageHandler, Filters
+from pymongo import MongoClient
 
 
 
 #Need an environment variable
-with open(os.getenv('BOT_CONF_FILE')) as f:
+#with open(os.getenv('BOT_CONF_FILE')) as f:
+with open('conf.json') as f:
   conf_File = json.load(f)
 
 path = conf_File['HOME']
 
 updater = Updater(token=conf_File['TOKEN'], use_context=True)
 dispatcher = updater.dispatcher
+
+#mongo_user = conf_File['Users']['Giacomo']['Mongo']['user']
+#mongo_password = conf_File['Users']['Giacomo']['Mongo']['password']
 
 ############
 # Handlers #
@@ -48,6 +54,27 @@ def myip(update, context):
 #     query = update.inline_query.query
 #     # handle the inline query here
 #     pass
+
+def uscite(update, context):
+    """Send a message when the command /uscite is issued."""
+    name = update.message.from_user.first_name
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {name}! Ecco le uscite italiane aggiornate ad oggi")
+    # Add call to function to pull the latest release from db
+
+
+    client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_password}@sandbox.zkkx5fv.mongodb.net")
+    db = client["comicsReleases"]
+    collection = db["ita_releases"]
+
+    # Get today's date
+    today = datetime.datetime.now().date()
+
+    # Query for documents with a "date" field equal to today's date
+    query = {"date": today}
+    documents = collection.find(query)
+
+    pprint(documents)
+
 
 def channel_message(update, context):
     """Handle messages from a channel."""
@@ -112,44 +139,44 @@ def download(update, context):
         pprint(output)
         context.bot.send_message(chat_id=update.effective_chat.id, text=output) 
         
-
-
-def cbQuery(update, context) -> None:
-    #Handle the inline query.
-
-    query = update.inline_query.query
-
-    if query == "":
-        return
-    pprint(str(query))
-    url='https://www.comicsbox.it/search.php'
-    params ={'stringa': str(query),'criterio': 'ita', 'submit':''}
-
-    response=requests.post(url, data=params)
-    soup = BeautifulSoup(response.text, 'html5lib')
-
-    table = soup.find_all("span", class_="title")
-
-    results = []
-
-    for i in enumerate(table[:30]):
-
-        id = i[0]
-        link = i[1].find("a")['href']
-        link = "https://comicsbox.it/"+ link
-        thumb = "https://comicsbox.it/" + link.replace("serie","cover") + "_001.jpg"
-        value = i[1].text
-
-        item = InlineQueryResultArticle(
-            id=str(i[0]),
-            title= str(value),
-            input_message_content= InputTextMessageContent(link),
-            description=str(value))
-
-        results.append(item)
-
-    update.inline_query.answer(results)
 """
+
+# def cbQuery(update, context) -> None:
+
+#     query = update.inline_query.query
+
+#     if query == "":
+#         return
+#     pprint(str(query))
+#     url='https://www.comicsbox.it'
+#     #params ={'stringa': str(query),'criterio': 'ita', 'submit':''}
+
+#     #response=requests.post(url, data=params)
+#     response = requests.get(url)
+#     soup = BeautifulSoup(response.text, 'html5lib')
+
+#     table = soup.find_all("span", class_="title")
+
+#     results = []
+
+#     for i in enumerate(table[:30]):
+
+#         id = i[0]
+#         link = i[1].find("a")['href']
+#         link = "https://comicsbox.it/"+ link
+#         thumb = "https://comicsbox.it/" + link.replace("serie","cover") + "_001.jpg"
+#         value = i[1].text
+
+#         item = InlineQueryResultArticle(
+#             id=str(i[0]),
+#             title= str(value),
+#             input_message_content= InputTextMessageContent(link),
+#             description=str(value))
+
+#         results.append(item)
+
+#     update.inline_query.answer(results)
+
 ##############################################################################    
                 
                 
@@ -185,6 +212,9 @@ def reminderSpotify():
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
+
+uscite_handler = CommandHandler('uscite', uscite)
+dispatcher.add_handler(uscite_handler)
 
 myip_handler = CommandHandler('ip', myip)
 dispatcher.add_handler(myip_handler)
