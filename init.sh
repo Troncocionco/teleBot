@@ -28,6 +28,11 @@ then
     # Read the JSON file
     json_data=$(cat $BOT_CONF_FILE)
 
+    if ! command -v jq &> /dev/null
+    then
+        sudo apt install jq
+    fi
+    
     # Parse the JSON data and update the field "HOME" with the value of the current directory
     json_data=$(echo $json_data | jq --arg dir "$working_dir/" '.HOME = $dir')
     json_data=$(echo $json_data | jq --arg dir "$working_dir/log/bot.log" '.Log_directory = $dir')
