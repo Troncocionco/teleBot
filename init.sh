@@ -20,6 +20,8 @@ if [ -f $( pwd )/conf.json ]
 then
     export BOT_CONFIG_FILE="$( pwd )/conf.json"
 
+    git update-index --skip-worktree conf.json
+
     # Read the JSON file
     json_data=$(cat $BOT_CONFIG_FILE)
 
