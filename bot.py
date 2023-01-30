@@ -145,43 +145,6 @@ def download(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text=output) 
         
 """
-
-# def cbQuery(update, context) -> None:
-
-#     query = update.inline_query.query
-
-#     if query == "":
-#         return
-#     pprint(str(query))
-#     url='https://www.comicsbox.it'
-#     #params ={'stringa': str(query),'criterio': 'ita', 'submit':''}
-
-#     #response=requests.post(url, data=params)
-#     response = requests.get(url)
-#     soup = BeautifulSoup(response.text, 'html5lib')
-
-#     table = soup.find_all("span", class_="title")
-
-#     results = []
-
-#     for i in enumerate(table[:30]):
-
-#         id = i[0]
-#         link = i[1].find("a")['href']
-#         link = "https://comicsbox.it/"+ link
-#         thumb = "https://comicsbox.it/" + link.replace("serie","cover") + "_001.jpg"
-#         value = i[1].text
-
-#         item = InlineQueryResultArticle(
-#             id=str(i[0]),
-#             title= str(value),
-#             input_message_content= InputTextMessageContent(link),
-#             description=str(value))
-
-#         results.append(item)
-
-#     update.inline_query.answer(results)
-
 ##############################################################################    
                 
                 

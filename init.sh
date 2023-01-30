@@ -18,8 +18,8 @@ fi
 
 if [ -f $( pwd )/conf.json ]
 then
-    echo "export BOT_CONF_FILE=$(pwd)/conf.json" >> ~/.bashrc
-    echo "export BOT_CONF_FILE=$(pwd)/conf.json" >> ~/.bash_profile
+    echo "export BOT_CONF_FILE=$( pwd )/conf.json" >> ~/.bashrc
+    echo "export BOT_CONF_FILE=$( pwd )/conf.json" >> ~/.bash_profile
     source ~/.bashrc
     source ~/.bash_profile
 
