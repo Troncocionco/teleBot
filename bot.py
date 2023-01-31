@@ -125,44 +125,6 @@ def channel_message(update, context):
                 #bot.sendMessage(chat_ref, filterMsg)
                 context.bot.forward_message(chat_id=conf_File['Users']['Giacomo']['Pers_ChatID'], from_chat_id=update.channel_post.chat_id, message_id=update.channel_post.message_id)
 
-#########################################################
-#                Features                               #
-#########################################################
-"""
-def ubooquity(update, context):
-
-    chat_id=update.effective_chat.id
-
-    if str(chat_id) in conFile['AllowedUser']:
-        if not context.args:
-            output = subprocess.check_output(['bash','/home/pi/Ubooquity/run-ubooquity.sh', 'status'])
-            context.bot.send_message(chat_id=update.effective_chat.id, text=output.decode('utf-8'))
-        else:
-            output = subprocess.check_output(['bash','/home/pi/Ubooquity/run-ubooquity.sh', context.args[0]])
-            context.bot.send_message(chat_id=update.effective_chat.id, text=output.decode('utf-8'))
-
-def download(update, context):
-    pprint(type(context.args[0]))
-    pprint(context.args[0])
-    chat_id=update.effective_chat.id
-
-    if str(chat_id) in conFile['AllowedUser']:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Attenzione non scaricare file superiore a 200Mb!")
-        fileName = str(context.args[0]).split("/")[-1]
-        fileName = "/data_500GB/Fumetti/USA/"+ fileName + ".cbr"
-        r = requests.get(str(context.args[0]), allow_redirects=True)
-
-        open(fileName, 'wb').write(r.content)
-
-
-
-        subprocess.run(["bash", "download.sh", context.args[0]])
-        output = subprocess.check_output(["ls","-t","/data_500GB/Fumetti/USA"])
-        output = str(output).replace("\\n",' #')
-        pprint(output)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=output) 
-        
-"""
 ##############################################################################    
                 
                 
