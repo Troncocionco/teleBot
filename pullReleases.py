@@ -16,9 +16,12 @@ client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_password}@sandbox.zkkx5
 db = client["comicsReleases"]
 collection = db["ita_releases"]
 
+#collection.update_many({}, {"$set": {"week": "5"}})
+
 #collection.delete_many({})
 
 today = str(date.today())
+week = str(int(date.today().strftime("%U")))
 
 url='https://www.comicsbox.it'
 
@@ -36,7 +39,7 @@ for i in childrens:
     
     title = i.findChildren("img")[0].attrs.get("title")
     
-    results.append({"href": href, "data_src": data_src, "title": title , "date": today})
+    results.append({"href": href, "data_src": data_src, "title": title , "date": today, "week": week})
 
 
 collection.insert_many(results)

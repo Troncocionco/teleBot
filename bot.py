@@ -32,9 +32,11 @@ mongo_password = conf_File['Users']['Giacomo']['Mongo']['password']
 
 def start(update, context):
     """Send a message when the command /start is issued."""
-    name = update.message.from_user.first_name
-    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {name}! How can I help you today?")
 
+    pprint(update.message)
+    name = update.message.from_user.first_name
+
+    context.bot.sendMessage(chat_id, f"Ciao {name}!" )
 
 def myip(update, context):
     """ Replace with addresses of few services when the command /ip is issued"""
@@ -54,30 +56,46 @@ def myip(update, context):
 #     # handle the inline query here
 #     pass
 
-def uscite(update, context):
+def uscite(update, context, cursor_week=0, max_rec=10):
     """Send a message when the command /uscite is issued."""
-    name = update.message.from_user.first_name
-    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {name}! Ecco le uscite italiane aggiornate ad oggi")
-    # Add call to function to pull the latest release from db
+    pprint(context.args)
 
+    try:
+        if (context.args[0] and co):
+            cursor_week = context.args[0]
+        if (context.args[1]):
+            max_rec = int(context.args[1])
+    except:
+        print("/uscite called without arguments")
+
+    name = update.message.from_user.first_name
+   
+    # Add call to function to pull the latest release from db
 
     client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_password}@sandbox.zkkx5fv.mongodb.net")
     db = client["comicsReleases"]
     collection = db["ita_releases"]
 
     # Get today's date
-    today = str(datetime.datetime.now().date())
+    current_week = int(datetime.datetime.today().strftime("%U"))
+    target_week = str(current_week - int(cursor_week))
+
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {name}! Ecco le uscite italiane aggiornate alla week #{target_week}")
 
     # Query for documents with a "date" field equal to today's date
-    query = {"date": today}
+    query = {"week": target_week}
     documents = list(collection.find(query))
+    print(len(documents))
 
-    for i in range(10):
-        photo = documents[i]['data_src']
-        caption = documents[i]['title'] + '\n' + documents[i]['href']
-        print(photo, caption)
-        context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo, caption=caption)
-    
+    if (len(documents) < max_rec):
+        max_rec = len(documents)
+    else:
+        for i in range(max_rec):
+            photo = documents[i]['data_src']
+            caption = documents[i]['title'] + '\n' + documents[i]['href']
+            print(photo, caption)
+            context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo, caption=caption)
+
     #pprint(documents) 
 
 
