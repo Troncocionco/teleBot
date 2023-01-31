@@ -101,10 +101,9 @@ def uscite(update, context, cursor_week=0, max_rec=10):
 
 def channel_message(update, context):
     """Handle messages from a channel."""
-    pprint(type(update.channel_post.text))
+    pprint(update.channel_post.text)
     text_msg = update.channel_post.text
     
-
     #cid = "@rss_torrg" #Channel Torrent Galaxy RSS Feed
     cid = conf_File['Users']['Giacomo']['ChannelID'] #Channel Torrent Galaxy RSS Feed
 
@@ -125,9 +124,9 @@ def channel_message(update, context):
                 #bot.sendMessage(chat_ref, filterMsg)
                 context.bot.forward_message(chat_id=conf_File['Users']['Giacomo']['Pers_ChatID'], from_chat_id=update.channel_post.chat_id, message_id=update.channel_post.message_id)
 
-##############################################################################    
-                
-                
+##############################################################################            
+
+# Error Handler         
 def error_callback(bot, update, error):
     try:
         raise error
@@ -136,10 +135,9 @@ def error_callback(bot, update, error):
     except Exception as e:
         print(f'Error: {e}')
 
-
 ############
 
-
+# Remider Spotify
 def reminderSpotify():
     pprint("Current jobs schedule ", schedule.get_jobs())
     chat_ref = conf_File['Users']['Giacomo']['ChannelID']
