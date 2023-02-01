@@ -61,7 +61,7 @@ def uscite(update, context, cursor_week=0, max_rec=10):
     pprint(context.args)
 
     try:
-        if (context.args[0] and co):
+        if (context.args[0]):
             cursor_week = context.args[0]
         if (context.args[1]):
             max_rec = int(context.args[1])
@@ -69,7 +69,7 @@ def uscite(update, context, cursor_week=0, max_rec=10):
         print("/uscite called without arguments")
 
     name = update.message.from_user.first_name
-   
+    
     # Add call to function to pull the latest release from db
 
     client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_password}@sandbox.zkkx5fv.mongodb.net")
@@ -80,12 +80,10 @@ def uscite(update, context, cursor_week=0, max_rec=10):
     current_week = int(datetime.datetime.today().strftime("%U"))
     target_week = str(current_week - int(cursor_week))
 
-    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {name}! Ecco le uscite italiane aggiornate alla week #{target_week}")
-
     # Query for documents with a "date" field equal to today's date
     query = {"week": target_week}
     documents = list(collection.find(query))
-    print(len(documents))
+    print("Scaricato # " + str(len(documents)) + " documenti")
 
     if (len(documents) < max_rec):
         max_rec = len(documents)
@@ -95,8 +93,7 @@ def uscite(update, context, cursor_week=0, max_rec=10):
             caption = documents[i]['title'] + '\n' + documents[i]['href']
             print(photo, caption)
             context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo, caption=caption)
-
-    #pprint(documents) 
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {name}! Ecco le ultime {max_rec} uscite italiane aggiornate alla week #{target_week}")
 
 
 def channel_message(update, context):
