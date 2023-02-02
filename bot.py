@@ -11,6 +11,7 @@ import datetime
 import requests
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler, MessageHandler, Filters
 from pymongo import MongoClient
+import logging
 
 
 
@@ -26,14 +27,32 @@ dispatcher = updater.dispatcher
 mongo_user = conf_File['Users']['Giacomo']['Mongo']['user']
 mongo_password = conf_File['Users']['Giacomo']['Mongo']['password']
 
+log_file = conf_File['Log_directory'] 
+
+# Configure the logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# Create a file handler
+file_handler = logging.FileHandler(log_file)
+file_handler.setLevel(logging.DEBUG)
+
+# Create a formatter and add it to the file handler
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+file_handler.setFormatter(formatter)
+
+# Add the file handler to the logger
+logger.addHandler(file_handler)
+
+
 ############
 # Handlers #
 ############
 
 def start(update, context):
     """Send a message when the command /start is issued."""
+    logger.info(f"/start command issued: {update.message}" )
 
-    pprint(update.message)
     name = update.message.from_user.first_name
 
     context.bot.sendMessage(chat_id, f"Ciao {name}!" )
@@ -49,6 +68,8 @@ def myip(update, context):
         context.bot.sendMessage(chat_id, "IP_telebot: "+URL)
         context.bot.sendMessage(chat_id, "Server Fumetti: "+ conf_File['Domain']['domain1']['domain-1-name'] )
         context.bot.sendMessage(chat_id, "Server Backup Fumetti: "+ conf_File['Domain']['domain2']['domain-2-name'] + ":" + conf_File['Domain']['domain2']['domain-2-port'] )
+    else:
+        logger.warning(f"Unauthorized /ip command issued! {update.message.from_user.id} - {update.message.from_user.name}" )
 
 # def inline_query(update, context):
 #     """Handle the inline query."""
@@ -65,12 +86,10 @@ def uscite(update, context, cursor_week=0, max_rec=10):
             cursor_week = context.args[0]
         if (context.args[1]):
             max_rec = int(context.args[1])
+        logger.info(f"/uscite called with arguments: {update.message} - args_1:'{context.args[0]}' args_2:'{context.args[1]}'")
     except:
-        print("/uscite called without arguments")
+        logger.info(f"/uscite called without arguments: {update.message}")
 
-    name = update.message.from_user.first_name
-    
-    # Add call to function to pull the latest release from db
 
     client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_password}@sandbox.zkkx5fv.mongodb.net")
     db = client["comicsReleases"]
@@ -93,7 +112,7 @@ def uscite(update, context, cursor_week=0, max_rec=10):
             caption = documents[i]['title'] + '\n' + documents[i]['href']
             print(photo, caption)
             context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo, caption=caption)
-    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {name}! Ecco le ultime {max_rec} uscite italiane aggiornate alla week #{target_week}")
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {update.message.from_user.first_name}! Ecco le ultime {max_rec} uscite italiane aggiornate alla week #{target_week}")
 
 
 def channel_message(update, context):
@@ -114,11 +133,10 @@ def channel_message(update, context):
 
         if result:
             if (pattern == 'XXX -' or pattern == 'XXX-'):
-                print("Match del-regex! Deleting message... ")
+                logger.info("Msg from channel matched del-regex! Deleting message... ")
                 context.bot.delete_message(chat_id=update.channel_post.chat_id, message_id=update.channel_post.message_id)
             else:
-                print("Match regex! Forwarding message... ")
-                #bot.sendMessage(chat_ref, filterMsg)
+                logger.info("Msg from channel matched regex! Forwarding message... ")
                 context.bot.forward_message(chat_id=conf_File['Users']['Giacomo']['Pers_ChatID'], from_chat_id=update.channel_post.chat_id, message_id=update.channel_post.message_id)
 
 ##############################################################################            
