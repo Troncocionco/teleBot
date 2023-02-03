@@ -1,6 +1,7 @@
 {
     "TOKEN": "YOUR_CHATBOT_TOKEN",
-    "Log_directory": "/workspace/test-python/log/bot.log",
+    "bot_log": "/workspace/test-python/log/bot.log",
+    "preview_log": "/workspace/test-python/log/preview.log",
     "HOME": "/workspace/test-python/",
     "AllowedUser": "user1_ID user2_ID user3_ID",
      "Users": {
