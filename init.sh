@@ -14,6 +14,7 @@ if [ ! -d $working_dir/log ]
 then
 	mkdir $working_dir/log
 	touch $working_dir/log/bot.log
+    touch $working_dir/log/preview.log
 fi
 
 if [ -f $( pwd )/conf.json ]
@@ -35,7 +36,8 @@ then
     
     # Parse the JSON data and update the field "HOME" with the value of the current directory
     json_data=$(echo $json_data | jq --arg dir "$working_dir/" '.HOME = $dir')
-    json_data=$(echo $json_data | jq --arg dir "$working_dir/log/bot.log" '.Log_directory = $dir')
+    json_data=$(echo $json_data | jq --arg dir "$working_dir/log/bot.log" '.bot_log = $dir')
+    json_data=$(echo $json_data | jq --arg dir "$working_dir/log/preview.log" '.preview_log = $dir')
 
     # Write the updated JSON data back to the file
     echo $json_data > $BOT_CONF_FILE

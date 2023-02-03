@@ -10,7 +10,7 @@ import telegram
 import datetime
 import requests
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler, MessageHandler, Filters
-from pymongo import MongoClient
+from pymongo import MongoClient, DESCENDING
 import logging
 
 
@@ -27,7 +27,7 @@ dispatcher = updater.dispatcher
 mongo_user = conf_File['Users']['Giacomo']['Mongo']['user']
 mongo_password = conf_File['Users']['Giacomo']['Mongo']['password']
 
-log_file = conf_File['Log_directory'] 
+log_file = conf_File['bot_log'] 
 
 # Configure the logger
 logger = logging.getLogger(__name__)
@@ -79,8 +79,6 @@ def myip(update, context):
 
 def uscite(update, context, cursor_week=0, max_rec=10):
     """Send a message when the command /uscite is issued."""
-    pprint(context.args)
-
     try:
         if (context.args[0]):
             cursor_week = context.args[0]
@@ -101,7 +99,7 @@ def uscite(update, context, cursor_week=0, max_rec=10):
 
     # Query for documents with a "date" field equal to today's date
     query = {"week": target_week}
-    documents = list(collection.find(query))
+    documents = list(collection.find(query).sort("_id", DESCENDING))
     print("Scaricato # " + str(len(documents)) + " documenti")
 
     if (len(documents) < max_rec):
