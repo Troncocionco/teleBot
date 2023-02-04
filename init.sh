@@ -5,6 +5,9 @@ working_dir=$( pwd )
 #Build folder tree
 echo $working_dir
 
+echo "/log" >> $working_dir/.gitignore
+echo "/res" >> $working_dir/.gitignore
+
 if [ ! -d $working_dir/res ]
 then
 	mkdir $working_dir/res

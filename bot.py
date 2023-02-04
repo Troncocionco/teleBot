@@ -27,6 +27,8 @@ dispatcher = updater.dispatcher
 mongo_user = conf_File['Users']['Giacomo']['Mongo']['user']
 mongo_password = conf_File['Users']['Giacomo']['Mongo']['password']
 
+client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_password}@sandbox.zkkx5fv.mongodb.net")
+
 log_file = conf_File['bot_log'] 
 
 # Configure the logger
@@ -77,6 +79,32 @@ def myip(update, context):
 #     # handle the inline query here
 #     pass
 
+def anteprima(update, context):
+
+    logger.info(f"/anteprima command issued! Passed arguments {context.args} ")
+
+    db = client["anteprimePanini"]
+    collection = db["archivio"]  
+    try:
+        if context.args != []:
+            query = {"number": int(context.args[0])}
+            document = list(collection.find(query))[0]
+            pprint(document)
+        else:
+            document = list(collection.find().sort("number", DESCENDING))[0]
+            pprint(document)
+
+        context.bot.send_document(
+            chat_id=update.effective_chat.id, 
+            document="https://www.panini.it/media/flowpaper/A373/docs/A373.pdf", 
+            caption=f"Anteprima #{document['number']} "
+        )
+
+    except Exception as e:
+        print(e.message)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Release not available!")
+    
+
 def uscite(update, context, cursor_week=0, max_rec=10):
     """Send a message when the command /uscite is issued."""
     try:
@@ -88,8 +116,6 @@ def uscite(update, context, cursor_week=0, max_rec=10):
     except:
         logger.info(f"/uscite called without arguments: {update.message}")
 
-
-    client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_password}@sandbox.zkkx5fv.mongodb.net")
     db = client["comicsReleases"]
     collection = db["ita_releases"]
 
@@ -171,6 +197,9 @@ def reminderSpotify():
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
+
+anteprima_handler = CommandHandler('anteprima', anteprima)
+dispatcher.add_handler(anteprima_handler)
 
 uscite_handler = CommandHandler('uscite', uscite)
 dispatcher.add_handler(uscite_handler)

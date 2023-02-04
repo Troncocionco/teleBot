@@ -5,6 +5,7 @@ from pymongo import MongoClient, ASCENDING, DESCENDING
 from datetime import date
 import json
 import os
+import logging
 
 # Logic (daily)
 # 1. Import file per configurazione
@@ -26,6 +27,10 @@ mongo_password = conf_File['Users']['Giacomo']['Mongo']['password']
 client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_password}@sandbox.zkkx5fv.mongodb.net")
 db = client["anteprimePanini"]
 collection = db["archivio"]
+
+#Define local path for storage resources
+res_path = conf_File['HOME']+"res/"
+print(f"Res path is : {res_path}")
 
 #Instanciate logger
 log_file = conf_File['preview_log'] 
@@ -65,7 +70,7 @@ def previewPolling():
         document = list(collection.find(query).sort("number", DESCENDING))[0]
 
     numbAnteprima = document['number']
-    #print(f"Number fetched from Mongo returns type {type(numbAnteprima)}")
+    #print(f"Number fetched from Mongo returns type {numbAnteprima}")
 
     if document['month'] == "1":
     #if document['month'] == str(date.today().month):
@@ -77,12 +82,15 @@ def previewPolling():
         logger.info(f"Attempt fetching new Anteprima #{numbAnteprima}...")
         try:
             url = f"https://www.panini.it/media/flowpaper/A{numbAnteprima}/docs/A{numbAnteprima}.pdf"
-            r = requests.get(url, allow_redirects=True)
+            r = requests.get(url)
             pprint(r.headers)
             if(r.headers["Content-Type"] == "application/pdf"):
                 logger.info("Success! Attempting insertion of a new record in Mongo...")
                 collection.insert_one({"url": url, "year": current_year, "month": current_month, "number": numbAnteprima})
                 logger.info("Insertion completed successfully! Stop.")
+                with open(f"{res_path}A{numbAnteprima}.pdf", "wb") as file:
+                    file.write(r.content)
+                logger.info("Persisted file locally!")
             else:
                 raise ContentDecodingError
         except:
