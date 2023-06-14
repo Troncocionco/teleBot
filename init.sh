@@ -41,7 +41,7 @@ then
     fi
 
     source ~/.bashrc
-    source ~/.bash_profile
+    #source ~/.bash_profile
 
     git update-index --skip-worktree conf.json
 
