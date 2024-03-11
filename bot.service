@@ -4,12 +4,15 @@
 # Enable/Start service 'sudo systemctl enable/start bot.service'
 
 [Unit]
-Description=teleBot service
+Description=Telegram Bot Service
+After=network.target
 
 [Service]
-User=root
-WorkingDirectory=/home/teleBot
-ExecStart=/home/teleBot/bot.py
+User=giacomo
+Group=giacomo
+WorkingDirectory=/home/giacomo/Projects/teleBot
+ExecStart=/usr/bin/python3 bot.py
+Environment="BOT_CONF_FILE=/home/giacomo/Projects/teleBot/conf.json"
 Restart=always
 
 [Install]
