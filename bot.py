@@ -9,7 +9,8 @@ import time
 import telegram
 import datetime
 import requests
-from telegram.ext import Updater, CommandHandler, InlineQueryHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, InlineQueryHandler, MessageHandler, Filters, CallbackContext
+from telegram import Update
 from pymongo import MongoClient, DESCENDING
 import logging
 
@@ -19,19 +20,23 @@ import logging
 with open(os.getenv('BOT_CONF_FILE')) as f:
   conf_File = json.load(f)
 
+#Setup working directory
 path = conf_File['HOME']
 
+#Setup BOT token-key
 updater = Updater(token=conf_File['TOKEN'], use_context=True)
 dispatcher = updater.dispatcher
 
+#Initialize Mongo DB Client Connection
 mongo_user = conf_File['Users']['Giacomo']['Mongo']['user']
 mongo_password = conf_File['Users']['Giacomo']['Mongo']['password']
 
 client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_password}@sandbox.zkkx5fv.mongodb.net")
 
-log_file = conf_File['bot_log'] 
 
 # Configure the logger
+log_file = conf_File['bot_log'] 
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -55,12 +60,25 @@ def start(update, context):
     """Send a message when the command /start is issued."""
     logger.info(f"/start command issued: {update.message}" )
 
-    name = update.message.from_user.first_name
+    message = update.message
+    chat_id = message.chat_id
+    user_id = message.from_user.id
+    username = update.message.from_user.first_name
 
-    context.bot.sendMessage(chat_id, f"Ciao {name}!" )
+    context.bot.sendMessage(chat_id, f"Ciao {username}!" )
+
+def myid(update, context):
+    """Reply to /id message with user_id of the writing user"""
+    message = update.message
+    chat_id = message.chat_id
+    user_id = message.from_user.id
+
+    update.message.reply_text(f"UserID: {user_id}")
+    update.message.reply_text(f"ChatID: {chat_id}")
+
 
 def myip(update, context):
-    """ Replace with addresses of few services when the command /ip is issued"""
+    """ Respond with addresses of few services when the command /ip is issued"""
     message = update.message
     chat_id = message.chat_id
 
@@ -69,7 +87,7 @@ def myip(update, context):
         URL = ip_request.content.decode("UTF-8")[:-1]
         context.bot.sendMessage(chat_id, "IP_telebot: "+URL)
         context.bot.sendMessage(chat_id, "Server Fumetti: "+ conf_File['Domain']['domain1']['domain-1-name'] )
-        context.bot.sendMessage(chat_id, "Server Backup Fumetti: "+ conf_File['Domain']['domain2']['domain-2-name'] + ":" + conf_File['Domain']['domain2']['domain-2-port'] )
+        #context.bot.sendMessage(chat_id, "Server Backup Fumetti: "+ conf_File['Domain']['domain2']['domain-2-name'] + ":" + conf_File['Domain']['domain2']['domain-2-port'] )
     else:
         logger.warning(f"Unauthorized /ip command issued! {update.message.from_user.id} - {update.message.from_user.name}" )
 
@@ -89,11 +107,14 @@ def anteprima(update, context):
         if context.args != []:
             query = {"number": int(context.args[0])}
             document = list(collection.find(query))[0]
+            pprint ("Issue retrived!")
             pprint(document)
         else:
             document = list(collection.find().sort("number", DESCENDING))[0]
+            pprint("No issue requested. Fetching last one available")
             pprint(document)
 
+        pprint("End of IF-ELSE")
         context.bot.send_document(
             chat_id=update.effective_chat.id, 
             document="https://www.panini.it/media/flowpaper/A373/docs/A373.pdf", 
@@ -165,14 +186,16 @@ def channel_message(update, context):
 
 ##############################################################################            
 
-# Error Handler         
-def error_callback(bot, update, error):
+def error_callback(update, context):
+    """Log errors raised by updates."""
     try:
-        raise error
-    except TelegramError as te:
-        print(f'TelegramError: {te}')
+        raise context.error
+    except IndexError as e:
+        # Handle IndexError
+        print(f"IndexError occurred: {e}")
     except Exception as e:
-        print(f'Error: {e}')
+        # Handle other exceptions
+        print(f"An error occurred: {e}")
 
 ############
 
@@ -197,6 +220,9 @@ def reminderSpotify():
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
+
+myid_handler = CommandHandler('id', myid)
+dispatcher.add_handler(myid_handler)
 
 anteprima_handler = CommandHandler('anteprima', anteprima)
 dispatcher.add_handler(anteprima_handler)
@@ -225,4 +251,3 @@ schedule.every(1).day.at("10:00").do(reminderSpotify)
 while 1:
     schedule.run_pending()
     time.sleep(5)
-    
