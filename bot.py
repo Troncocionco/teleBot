@@ -160,6 +160,22 @@ def uscite(update, context, cursor_week=0, max_rec=10):
     context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {update.message.from_user.first_name}! Ecco le ultime {max_rec} uscite italiane aggiornate alla week #{target_week}")
 
 
+def plex_update(update, context):
+
+    plex_token = conf_File['Users']['Giacomo']['Plex']['token']
+
+    params = {"X-Plex-Token": plex_token}
+    
+    url1 = "http://192.168.1.64:32400/library/sections/1/refresh"
+    url2 = "http://192.168.1.64:32400/library/sections/2/refresh"
+    url3 = "http://192.168.1.64:32400/library/sections/3/refresh"
+
+    requests.get(url1, params=params)
+    requests.get(url2, params=params)
+    requests.get(url3, params=params)
+
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hi {update.message.from_user.first_name}! Plex index has been updated!")
+
 def channel_message(update, context):
     """Handle messages from a channel."""
     pprint(update.channel_post.text)
@@ -224,14 +240,18 @@ dispatcher.add_handler(start_handler)
 myid_handler = CommandHandler('id', myid)
 dispatcher.add_handler(myid_handler)
 
+myip_handler = CommandHandler('ip', myip)
+dispatcher.add_handler(myip_handler)
+
 anteprima_handler = CommandHandler('anteprima', anteprima)
 dispatcher.add_handler(anteprima_handler)
 
 uscite_handler = CommandHandler('uscite', uscite)
 dispatcher.add_handler(uscite_handler)
 
-myip_handler = CommandHandler('ip', myip)
-dispatcher.add_handler(myip_handler)
+plex_update_handler = CommandHandler('plex', plex_update)
+dispatcher.add_handler(plex_update_handler)
+
 
 # inline_query_handler = InlineQueryHandler(inline_query)
 # dispatcher.add_handler(inline_query_handler)
@@ -251,3 +271,4 @@ schedule.every(1).day.at("10:00").do(reminderSpotify)
 while 1:
     schedule.run_pending()
     time.sleep(5)
+    
