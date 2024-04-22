@@ -162,7 +162,9 @@ def uscite(update, context, cursor_week=0, max_rec=10):
 
 def plex_update(update, context):
 
-    plex_token = conf_File['Users']['Giacomo']['Plex']['token']
+    os.system(conf_File['Users']['Giacomo']['Plex']['script-path'])
+
+    """plex_token = conf_File['Users']['Giacomo']['Plex']['token']
 
     params = {"X-Plex-Token": plex_token}
     
@@ -172,7 +174,7 @@ def plex_update(update, context):
 
     requests.get(url1, params=params)
     requests.get(url2, params=params)
-    requests.get(url3, params=params)
+    requests.get(url3, params=params)"""
 
     context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hi {update.message.from_user.first_name}! Plex index has been updated!")
 
