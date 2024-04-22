@@ -17,7 +17,7 @@ if [ ! -d $working_dir/log ]
 then
 	mkdir $working_dir/log
 	touch $working_dir/log/bot.log
-    touch $working_dir/log/preview.log
+	touch $working_dir/log/preview.log
 fi
 
 if [ -f $( pwd )/conf.json ]
@@ -32,13 +32,6 @@ then
         echo "export BOT_CONF_FILE=$( pwd )/conf.json" >> ~/.bashrc
     fi
 
-    # Check if .bash_profile contains the statement
-    if grep -q "export BOT_CONF_FILE=" ~/.bash_profile; then
-        echo ".bash_profile contains the statement"
-    else
-        echo ".bash_profile does not contain the statement"
-        echo "export BOT_CONF_FILE=$( pwd )/conf.json" >> ~/.bash_profile
-    fi
 
     source ~/.bashrc
     #source ~/.bash_profile
@@ -61,6 +54,8 @@ then
     # Write the updated JSON data back to the file
     echo $json_data > $BOT_CONF_FILE
 fi
+
+echo  "So far, all good";
 
 #Check other dependencies
 if ! command -v python3 &> /dev/null
