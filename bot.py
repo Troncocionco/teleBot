@@ -161,8 +161,14 @@ def uscite(update, context, cursor_week=0, max_rec=10):
 
 
 def plex_update(update, context):
+    message = update.message
+    chat_id = message.chat_id
 
-    os.system(conf_File['Users']['Giacomo']['Plex']['script-path'])
+    if str(chat_id) in conf_File['AllowedUser']:
+        os.system(conf_File['Users']['Giacomo']['Plex']['script-path'])
+    else:
+        logger.warning(f"Unauthorized /ip command issued! {update.message.from_user.id} - {update.message.from_user.name}" )
+
 
     """plex_token = conf_File['Users']['Giacomo']['Plex']['token']
 
