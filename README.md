@@ -11,6 +11,15 @@ Need to install this python module first
 - Filtering msg from a specific Telegram Channel
 - Inline query towards Comicsbox.it 
 
+Bot-Father command's description:
+```
+start - Initialize bot
+ip - returns useful addresses
+id - return user & chat id
+uscite - returns latest release (opt. #week, #releases)
+anteprima - last available on db
+plex - clear and update plex server index
+```
 
 TO-do:
 - Implement older feature with new library version
