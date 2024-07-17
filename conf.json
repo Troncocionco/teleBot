@@ -1,46 +1,76 @@
 {
-    "TOKEN": "YOUR_CHATBOT_TOKEN",
-    "bot_log": "/workspace/test-python/log/bot.log",
-    "preview_log": "/workspace/test-python/log/preview.log",
-    "HOME": "/workspace/test-python/",
-    "AllowedUser": "user1_ID user2_ID user3_ID",
-     "Users": {
-        "user1": {
-            "tag": "user1_tag",
-            "Pers_ChatID": "user1_chatID",
-            "SpotifyGroupID": "group_chat_ID",
-            "ChannelID": "channel_ID",
+    "TOKEN": "XXXXXXX",
+    "bot_log": "/project/directory/log/bot.log",
+    "preview_log": "/project/directory/log/preview.log",
+    "HOME": "/project/directory/",
+    "AllowedUser": "XXXX YYYY KKKK ZZZZZ",
+    "Campo": null,
+    "Users": {
+        "User1": {
+            "tag": "something",
+            "Pers_ChatID": "XXXXX",
+            "SpotifyGroupID": "-XXXXXX",
+            "ChannelID": "-XXXXXXX",
+            "Mongo": {
+                "user": "mongo_user",
+                "password": "mongo-psw"
+            },
+            "Plex": {
+                "token": "XXXXXX",
+                "script-path": "/path/to/shell-script"
+            },
+            "IBM_S2T": {
+                "token": "XXXXXX",
+                "url": "https://XXXXXXX"
+            },
             "Filters": {
                 "filtro1": {
-                    "pattern": "regex_example_1",
-                    "messaggio": "Message"
+                    "pattern": "XXX -",
+                    "messaggio": "Pornazzo! Censura!"
+                },
+                "filtro2": {
+                    "pattern": "XXX-",
+                    "messaggio": "Pornazzo! Censura!"
+                },
+                "filtro3": {
+                    "pattern": ".*?Miami Heat.*",
+                    "messaggio": "***Hanno giocato gli #Heat!***"
+                },
+                "filtro4": {
+                    "pattern": "TV-Ep.*\n.*\nTokyo.Vice",
+                    "messaggio": "***Nuova Puntata #Tokyo Vice!***"
+                },
+                "filtro5": {
+                    "pattern": "TV-Episodes.*\n.*\nThe.Last.of.Us.*-TORRENTGALAXY",
+                    "messaggio": "***Nuova Puntata #TheLastofUs!***"
                 }
             }
         },
-        "user2": {
-            "tag": "user2_tag"
+        "User2": {
+            "tag": "XXXXXX"
         },
-        "user3": {
-            "tag": "user3_tag"
+        "User3": {
+            "tag": "YYYYYY"
         },
-        "user4": {
-            "tag": "user4_tag"
+        "User4": {
+            "tag": "KKKKKKK"
         },
-        "user5": {
-            "tag": "user5_tag"
+        "User5": {
+            "tag": "ZZZZZ"
         },
-        "user6": {
-            "tag": "user6_tag"
+        "User6": {
+            "tag": "CCCCCC"
         }
     },
     "Domain": {
         "domain1": {
-            "domain-1-name": "IP_ADDRESS//DOMAIN",
-            "domain-1-port": "PORT_NUMBER"
+            "domain-1-name": "something.com",
+            "domain-1-port": ""
         },
         "domain2": {
-            "domain-2-name": "IP_ADDRESS//DOMAIN",
-            "domain-2-port": "PORT_NUMBER"
+            "domain-2-name": "something-else.org",
+            "domain-2-port": "N"
         }
-    }
+    },
+    "List_item": null
 }
