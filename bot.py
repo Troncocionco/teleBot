@@ -13,6 +13,8 @@ from telegram.ext import Updater, CommandHandler, InlineQueryHandler, MessageHan
 from telegram import Update
 from pymongo import MongoClient, DESCENDING
 import logging
+from speech2text import transcribe_audio
+from pydub import AudioSegment
 
 
 
@@ -76,7 +78,6 @@ def myid(update, context):
     update.message.reply_text(f"UserID: {user_id}")
     update.message.reply_text(f"ChatID: {chat_id}")
 
-
 def myip(update, context):
     """ Respond with addresses of few services when the command /ip is issued"""
     message = update.message
@@ -125,7 +126,6 @@ def anteprima(update, context):
         print(e.message)
         context.bot.send_message(chat_id=update.effective_chat.id, text="Release not available!")
     
-
 def uscite(update, context, cursor_week=0, max_rec=10):
     """Send a message when the command /uscite is issued."""
     try:
@@ -159,7 +159,27 @@ def uscite(update, context, cursor_week=0, max_rec=10):
             context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo, caption=caption)
     context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {update.message.from_user.first_name}! Ecco le ultime {max_rec} uscite italiane aggiornate alla week #{target_week}")
 
+# Handle voice and audio message
+def speech2text(update, context):
+    # Check type audio or voice message
+    file = update.message.voice.get_file() if update.message.voice else update.message.audio.get_file()
+    file_path = file.download()
 
+    # Segment audio and convert from m4a-to-wav or from ogg-to-wav
+    audio = AudioSegment.from_file(file_path, format="m4a" if file_path.endswith('.m4a') else "ogg")
+    wav_path = file_path.replace('.oga', '.wav').replace('.m4a', '.wav')
+    audio.export(wav_path, format='wav')
+    print(f"Converted file to {wav_path}")
+
+    # Invoke API for transcription
+    transcript = transcribe_audio(wav_path)
+    update.message.reply_text(transcript)
+
+    # Remove temp file
+    os.remove(file_path)
+    os.remove(wav_path)
+
+# Plex updater
 def plex_update(update, context):
     message = update.message
     chat_id = message.chat_id
@@ -256,6 +276,8 @@ dispatcher.add_handler(anteprima_handler)
 
 uscite_handler = CommandHandler('uscite', uscite)
 dispatcher.add_handler(uscite_handler)
+
+dispatcher.add_handler(MessageHandler(Filters.voice | Filters.audio, speech2text))
 
 plex_update_handler = CommandHandler('plex', plex_update)
 dispatcher.add_handler(plex_update_handler)
