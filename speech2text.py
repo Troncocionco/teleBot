@@ -9,8 +9,8 @@ import json
 with open(os.getenv('BOT_CONF_FILE')) as f:
   conf_File = json.load(f)
 
-IBM_API_KEY = conf_File['User']['Giacomo']['IBM_S2T']['token']
-IBM_URL = conf_File['User']['Giacomo']['IBM_S2T']['url']
+IBM_API_KEY = conf_File['Users']['Giacomo']['IBM_S2T']['token']
+IBM_URL = conf_File['Users']['Giacomo']['IBM_S2T']['url']
 
 authenticator = IAMAuthenticator(IBM_API_KEY)
 speech_to_text = SpeechToTextV1(authenticator=authenticator)
