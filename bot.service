@@ -1,18 +1,11 @@
-# Add x permission on script
-# Place this file in /etc/systemd/system/bot.service
-# Restart deamon 'sudo systemctl daemon-reload'
-# Enable/Start service 'sudo systemctl enable/start bot.service'
-
 [Unit]
 Description=Telegram Bot Service
 After=network.target
 
 [Service]
 User=giacomo
-Group=giacomo
 WorkingDirectory=/home/giacomo/Projects/teleBot
 ExecStart=/usr/bin/python3 bot.py
-Environment="BOT_CONF_FILE=/home/giacomo/Projects/teleBot/conf.json"
 Restart=always
 
 [Install]
