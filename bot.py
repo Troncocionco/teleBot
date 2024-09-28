@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import subprocess
 import json
 import schedule
 from pprint import pprint
@@ -89,6 +90,15 @@ def myip(update, context):
         context.bot.sendMessage(chat_id, "IP_telebot: "+URL)
         context.bot.sendMessage(chat_id, "Server Fumetti: "+ conf_File['Domain']['domain1']['domain-1-name'] )
         #context.bot.sendMessage(chat_id, "Server Backup Fumetti: "+ conf_File['Domain']['domain2']['domain-2-name'] + ":" + conf_File['Domain']['domain2']['domain-2-port'] )
+
+        # Check Status of Tailscale tunnel
+        try:
+            result = subprocess.check_output(['tailscale', 'status'], text=True)
+            context.bot.sendMessage(chat_id, "Tailscale: Up")
+        except subprocess.CalledProcessError as e:
+            error=e.output
+            logger.warning(f"Error: {error} {update.message.from_user.id} - {update.message.from_user.name}")
+            context.bot.sendMessage(chat_id, "Tailscale: \n" + error)
     else:
         logger.warning(f"Unauthorized /ip command issued! {update.message.from_user.id} - {update.message.from_user.name}" )
 
