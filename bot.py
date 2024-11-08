@@ -34,7 +34,12 @@ dispatcher = updater.dispatcher
 mongo_user = conf_File['Users']['Giacomo']['Mongo']['user']
 mongo_password = conf_File['Users']['Giacomo']['Mongo']['password']
 
-client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_password}@sandbox.zkkx5fv.mongodb.net")
+mongo_client_up = True
+
+try:
+    client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_password}@sandbox.zkkx5fv.mongodb.net")
+except:
+    mongo_client_up = False
 
 
 # Configure the logger
@@ -99,6 +104,10 @@ def myip(update, context):
             error=e.output
             logger.warning(f"Error: {error} {update.message.from_user.id} - {update.message.from_user.name}")
             context.bot.sendMessage(chat_id, "Tailscale: \n" + error)
+        if mongo_client_up:
+            context.bot.sendMessage(chat_id, "MongoDB Client Connection: Up")
+        else:
+            context.bot.sendMessage(chat_id, "MongoDB Client Connection: DOWN")
     else:
         logger.warning(f"Unauthorized /ip command issued! {update.message.from_user.id} - {update.message.from_user.name}" )
 
@@ -138,36 +147,40 @@ def anteprima(update, context):
     
 def uscite(update, context, cursor_week=0, max_rec=10):
     """Send a message when the command /uscite is issued."""
-    try:
-        if (context.args[0]):
-            cursor_week = context.args[0]
-        if (context.args[1]):
-            max_rec = int(context.args[1])
-        logger.info(f"/uscite called with arguments: {update.message} - args_1:'{context.args[0]}' args_2:'{context.args[1]}'")
-    except:
-        logger.info(f"/uscite called without arguments: {update.message}")
 
-    db = client["comicsReleases"]
-    collection = db["ita_releases"]
+    if mongo_client_up == True:
+        try:
+            if (context.args[0]):
+                cursor_week = context.args[0]
+            if (context.args[1]):
+                max_rec = int(context.args[1])
+            logger.info(f"/uscite called with arguments: {update.message} - args_1:'{context.args[0]}' args_2:'{context.args[1]}'")
+        except:
+            logger.info(f"/uscite called without arguments: {update.message}")
 
-    # Get today's date
-    current_week = int(datetime.datetime.today().strftime("%U"))
-    target_week = str(current_week - int(cursor_week))
+        db = client["comicsReleases"]
+        collection = db["ita_releases"]
 
-    # Query for documents with a "date" field equal to today's date
-    query = {"week": target_week}
-    documents = list(collection.find(query).sort("_id", DESCENDING))
-    print("Scaricato # " + str(len(documents)) + " documenti")
+        # Get today's date
+        current_week = int(datetime.datetime.today().strftime("%U"))
+        target_week = str(current_week - int(cursor_week))
 
-    if (len(documents) < max_rec):
-        max_rec = len(documents)
+        # Query for documents with a "date" field equal to today's date
+        query = {"week": target_week}
+        documents = list(collection.find(query).sort("_id", DESCENDING))
+        print("Scaricato # " + str(len(documents)) + " documenti")
+
+        if (len(documents) < max_rec):
+            max_rec = len(documents)
+        else:
+            for i in range(max_rec):
+                photo = documents[i]['data_src']
+                caption = documents[i]['title'] + '\n' + documents[i]['href']
+                print(photo, caption)
+                context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo, caption=caption)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {update.message.from_user.first_name}! Ecco le ultime {max_rec} uscite italiane aggiornate alla week #{target_week}")
     else:
-        for i in range(max_rec):
-            photo = documents[i]['data_src']
-            caption = documents[i]['title'] + '\n' + documents[i]['href']
-            print(photo, caption)
-            context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo, caption=caption)
-    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {update.message.from_user.first_name}! Ecco le ultime {max_rec} uscite italiane aggiornate alla week #{target_week}")
+        context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello {update.message.from_user.first_name}! Sorry but your db connection is broken. Better look into it!")
 
 # Handle voice and audio message
 def speech2text(update, context):
