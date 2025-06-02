@@ -4,7 +4,13 @@ Just playing around with Telegram's Bot APi
 Need to install this python module first
 
 ```bash
-    pip install -r requirements.txt
+sudo apt install python3-venv python3-full  # se non è già installato
+
+python3 -m venv venv
+source venv/bin/activate
+
+pip install -r requirements.txt
+
 ```
 
 - Get new 'Anteprima' from Panini.it based on the issue requested
